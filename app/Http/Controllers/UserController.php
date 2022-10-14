@@ -23,26 +23,27 @@ class UserController extends Controller
             'password' => 'required'
         ]);
 
-        $post = $this->userService->register($validateData);
-        return $post;
+        $user = $this->userService->register($validateData);
 
-        // $credentials = request(['name', 'email', 'password']);
-        // $token = auth()->attempt($credentials);
+        // generate token
+        $token = auth()->attempt($validateData);
+        if (!$token) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
 
-        // if (!$token) {
-        //     return response()->json(['error' => 'Unauthorized'], 401);
-        // }
-
-        // if ($this->userService->register($validateData) == 1) {
-        //     return response()->json([
-        //         'access_token' => $token,
-        //         'token_type' => 'bearer',
-        //         'expires_in' => auth()->factory()->getTTL() * 60,
-        //         'Successfully to Register'
-        //     ]);
-        // } else {
-        //     'Failed to Register';
-        // }
+        if ($user) {
+            return response()->json([
+                'Message' => 'Successfully to Register',
+                'User Data' => $user,
+                'Token' => [
+                    'access_token' => $token,
+                    'token_type' => 'bearer',
+                    'expires_in' => auth()->factory()->getTTL() * 60
+                ]
+            ]);
+        } else {
+            'Failed to Register';
+        }
     }
 
     public function login()
